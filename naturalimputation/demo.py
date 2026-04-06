@@ -1,7 +1,7 @@
 import numpy as np
 from .evaluation import evaluate
 from joblib import Parallel, delayed
-from .methods import impute_mean, impute_logistic
+from .methods import impute_mean, impute_naturally
 from numpy.random import SeedSequence, default_rng
 from sklearn.datasets import make_classification
 from scipy.stats import beta
@@ -40,12 +40,12 @@ def run_simulation(child_seed, steepness, **kwargs):
 
     X_mean = X.copy()
     for i in range(X.shape[1]):
-        X_mean[:, i] = impute_mean(X[:, i])
+        X_mean[:, i], _ = impute_mean(X[:, i])
     res_mean = evaluate(X_mean, y, test)
 
     X_imp = X.copy()
     for i in range(X.shape[1]):
-        X_imp[:, i] = impute_logistic(X[:, i], y, test)
+        X_imp[:, i], _ = impute_naturally(X[:, i], y, test)
     res_log = evaluate(X_imp, y, test)
     return res_mean[1], res_log[1], avg_gap
 
