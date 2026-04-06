@@ -35,8 +35,6 @@ def run_simulation(child_seed, steepness, **kwargs):
     X_imp = X.copy()
     for i in range(X.shape[1]):
         X_imp[:, i] = impute_logistic(X[:, i], y, test)
-    # if np.isinf(X_imp).any():
-    #     raise ValueError("whoops, logistic imputation has inf")
     res_log = evaluate(X_imp, y, test)
     return res_mean[1], res_log[1]
 
