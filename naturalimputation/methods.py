@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
+import statsmodels.api as sm
 
 
 def impute_mean(x: np.ndarray):
@@ -21,15 +21,16 @@ def impute_mean(x: np.ndarray):
     return x_imp
 
 
-def impute_logistic(x, y, test):
+def impute_logistic(x, y, test, alpha=0.05):
     """Impute missing values using the natural imputation method for logistic regression.
 
     Fits a logistic regression on observed (non-missing, non-test) data to model
     the relationship between x and y, then imputes missing values at the x value
     whose log-odds equals that of the mean target rate among missing observations.
 
-    Falls back to mean imputation when the feature has no predictive relationship
-    with the target, or when class diversity is insufficient to fit a model.
+    Falls back to mean imputation when the feature has no statistically significant
+    relationship with the target (p > alpha on β₁), or when class diversity is
+    insufficient to fit a model.
 
     Parameters
     ----------
@@ -40,6 +41,10 @@ def impute_logistic(x, y, test):
     test : np.ndarray or pd.Series
         Boolean mask indicating test observations. Only training observations
         (where test is False) are used to fit the imputation model.
+    alpha : float, default 0.05
+        Significance level for the β₁ coefficient. If the p-value exceeds
+        alpha, the feature is considered non-predictive and mean imputation
+        is used instead.
 
     Returns
     -------
@@ -60,15 +65,17 @@ def impute_logistic(x, y, test):
     ):  # if only one (or zero) missing or nonmissing class, use mean imputation
         x_imp[missing] = np.nanmean(x)
         return pd.Series(x_imp, index=index) if index is not None else x_imp
-    model = LogisticRegression().fit(
-        X=x_imp[~test & ~missing].reshape(-1, 1), y=y[~test & ~missing]
-    )
-    if model.coef_[0][0] == 0:  # if feature is unrelated to target, use mean imputation
+    train = ~test & ~missing
+    X_train = sm.add_constant(x_imp[train])
+    model = sm.Logit(y[train], X_train).fit(disp=0)
+    beta_1 = model.params[1]
+    p_value = model.pvalues[1]
+    if p_value > alpha:  # if x does not significantly predict y, use mean imputation
         x_imp[missing] = np.nanmean(x)
         return pd.Series(x_imp, index=index) if index is not None else x_imp
     null_success_rate = y[~test & missing].mean()
     imp_val = (
-        np.log(null_success_rate / (1 - null_success_rate)) - model.intercept_[0]
-    ) / model.coef_[0][0]
+        np.log(null_success_rate / (1 - null_success_rate)) - model.params[0]
+    ) / beta_1
     x_imp[missing] = imp_val
     return pd.Series(x_imp, index=index) if index is not None else x_imp
