@@ -4,7 +4,7 @@ import numpy as np
 
 
 def evaluate(X, y, test):
-    model = LogisticRegression().fit(X=X[~test], y=y[~test])
+    model = LogisticRegression(max_iter=1000).fit(X=X[~test], y=y[~test])
     preds = model.predict_proba(X)[:, 1]
     return np.array(
         [
