@@ -27,7 +27,10 @@ def generate_dataset(steepness: int = 5, random_state=None, **classification_kwa
 def run_simulation(child_seed, steepness, **kwargs):
     rng = default_rng(child_seed)
     X, y, test = generate_dataset(random_state=rng, steepness=steepness, **kwargs)
-    res_mean = evaluate(impute_mean(X), y, test)
+    X_mean = X.copy()
+    for i in range(X.shape[1]):
+        X_mean[:, i] = impute_mean(X[:, i])
+    res_mean = evaluate(X_mean, y, test)
 
     X_imp = X.copy()
     for i in range(X.shape[1]):
