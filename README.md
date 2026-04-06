@@ -6,9 +6,9 @@ $$\ln\left(\frac{y'}{1-y'}\right) = \beta_0 + \beta_1 x'$$
 
 Where $x'$ and $y'$ represent the subsets of $x$ and $y$ such that $x$ is non-missing. Then, $x$ is **naturally imputed** at the value:
 
-$$x^{*} = \frac{\ln\left(\frac{y^{*}}{1-y^{*}}\right) - \beta_0}{\beta_1}$$
+$$x^{\ast} = \frac{\ln\left(\frac{y^{\ast}}{1-y^{\ast}}\right) - \beta_0}{\beta_1}$$
 
-where $y^{*}$ represents the mean of the target variable for the missing observations.
+where $y^{\ast}$ represents the mean of the target variable for the missing observations.
 
 This method avoids both the naïveté of mean/median imputation, and the complex dependence on other features inherent in more robust methods like MICE. It is effective when 1) $x'$ sufficiently predicts $y'$ and 2) $y^*$ is bounded away from $\bar{y}$. In the failure of either of these conditions, particularly 1), mean or median imputation can outperform NaturalImputation.
 
