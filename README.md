@@ -15,6 +15,7 @@ This method avoids both the naïveté of mean/median imputation, and the complex
 ## Example
 ```
 >>> import numpy as np
+>>> import pandas as pd
 >>> from naturalimputation import impute_logistic
 >>> from sklearn.datasets import make_classification
 >>> 
@@ -22,10 +23,16 @@ This method avoids both the naïveté of mean/median imputation, and the complex
 >>> X, y = make_classification(
 ...     random_state=rng.integers(0, 2**32 - 1)
 ... )
->>> test = rng.random(X.shape[0]) < 0.25
+>>> X, y = pd.DataFrame(X), pd.Series(y)
+>>> test = rng.random(len(X)) < 0.25
 >>>
->>> impute_logistic(X[:,0], y, test)[:5]
-array([ 0.25972331, -1.23166033,  1.15435619,  0.46444689, -0.10656167])
+>>> impute_logistic(X[0], y, test)[:5]
+0    0.259723
+1   -1.231660
+2    1.154356
+3    0.464447
+4   -0.106562
+dtype: float64
 ```
 
 <!-- ## Future Example to illustrate when conditions support naturalimputation
