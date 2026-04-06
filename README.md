@@ -10,7 +10,7 @@ $$x^{\ast} = \frac{\ln\left(\frac{y^{\ast}}{1-y^{\ast}}\right) - \beta_0}{\beta_
 
 where $y^{\ast}$ represents the mean of the target variable for the missing observations.
 
-This method avoids both the naïveté of mean/median imputation, and the complex dependence on other features inherent in more robust methods like MICE. It is effective when 1) $x'$ sufficiently predicts $y'$ (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the target rate among non-missing observations. When either condition fails, `impute_logistic` falls back to mean imputation.
+This method avoids both the naïveté of mean/median imputation, and the dependence on other features inherent in multivariate methods like MICE — NaturalImputation is univariate, imputing each feature independently using only the target, with no risk of multicollinearity and trivial parallelization. It is effective when 1) $x'$ sufficiently predicts $y'$ (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the target rate among non-missing observations. When either condition fails, `impute_logistic` falls back to mean imputation.
 
 ## Example
 ```python
