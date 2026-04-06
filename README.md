@@ -1,6 +1,6 @@
 # NaturalImputation
 
-**NaturalImputation** is a target-driven imputation method for Logistic Regression. It imputes each missing feature at the value whose predicted log-odds matches the observed target rate among missing rows, i.e., at the value that induces the model to predict the observed missing target rate.
+**NaturalImputation** is a target-driven imputation method for Logistic Regression. It imputes each missing feature at the value whose predicted log-odds matches missing rows' observed target rate.
 
 ## How it works
 
@@ -16,7 +16,7 @@ where $y^{\ast}$ is the mean target rate among missing observations.
 
 ## Why use it?
 
-NaturalImputation is **univariate**: each feature is imputed independently using only the target, hence no risk of multicollinearity and trivial parallelization, unlike multivariate methods like MICE.
+NaturalImputation is univariate: each feature is imputed independently using only the target, hence no risk of multicollinearity and trivial parallelization, unlike multivariate methods like MICE.
 
 It is effective when 1) the feature sufficiently predicts the target (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the rate among non-missing observations. When either condition fails, `impute_naturally` falls back to mean imputation.
 
