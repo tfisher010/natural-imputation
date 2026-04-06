@@ -1,0 +1,3 @@
+recursive-exclude .vscode *
+exclude .gitignore
+exclude .python-version
