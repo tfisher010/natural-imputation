@@ -1,16 +1,24 @@
 # NaturalImputation
 
-**NaturalImputation** is a simple but effective target-driven imputation method for Logistic Regression. For a given feature $x$ and target $y$, let $\beta_0$ and $\beta_1$ be the coefficients that minimize cross-entropy for the relationship:
+**NaturalImputation** is a target-driven imputation method for Logistic Regression. It imputes each missing feature at the value whose predicted log-odds matches the observed target rate among missing rows. In other words, it asks: *"what would this feature's value need to be for the model to predict the target rate we actually see for missing data?"*
+
+## How it works
+
+For a given feature $x$ and binary target $y$, fit a logistic regression on the non-missing observations:
 
 $$\ln\left(\frac{y'}{1-y'}\right) = \beta_0 + \beta_1 x'$$
 
-Where $x'$ and $y'$ represent the subsets of $x$ and $y$ such that $x$ is non-missing. Then, $x$ is **naturally imputed** at the value:
+Then impute missing values of $x$ at:
 
 $$x^{\ast} = \frac{\ln\left(\frac{y^{\ast}}{1-y^{\ast}}\right) - \beta_0}{\beta_1}$$
 
-where $y^{\ast}$ represents the mean of the target variable for the missing observations.
+where $y^{\ast}$ is the mean target rate among missing observations.
 
-This method avoids both the naïveté of mean/median imputation, and the dependence on other features inherent in multivariate methods like MICE — NaturalImputation is univariate, imputing each feature independently using only the target, with no risk of multicollinearity and trivial parallelization. It is effective when 1) $x'$ sufficiently predicts $y'$ (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the target rate among non-missing observations. When either condition fails, `impute_naturally` falls back to mean imputation.
+## Why use it?
+
+NaturalImputation is **univariate**: each feature is imputed independently using only the target. This means no risk of multicollinearity and trivial parallelization, unlike multivariate methods like MICE.
+
+It is effective when 1) the feature sufficiently predicts the target (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the rate among non-missing observations. When either condition fails, `impute_naturally` falls back to mean imputation.
 
 ## Example
 ```python
@@ -44,7 +52,7 @@ dtype: float64
 
 NaturalImputation exploits the difference between the target rate among missing vs non-missing observations. When that gap is large and the feature genuinely predicts the target, natural imputation delivers meaningful lift over mean imputation. `impute_naturally` automatically falls back to mean imputation when the feature's relationship with the target is not statistically significant (controlled by the `alpha` parameter, default 0.05).
 
-The simulation below generates synthetic datasets with varying missingness patterns — including near-random missingness (`steepness=1.01`) — then bins each run by the average absolute target-rate gap ($|\\bar{y}\_{missing} - \\bar{y}\_{nonmissing}|$) and reports the mean AUC lift and the proportion of runs where NaturalImputation underperformed mean imputation:
+The simulation below generates synthetic datasets with varying missingness patterns, including near-random missingness (`steepness=1.01`), then bins each run by the average absolute target-rate gap ($|\\bar{y}\_{missing} - \\bar{y}\_{nonmissing}|$) and reports the mean AUC lift and the proportion of runs where NaturalImputation underperformed mean imputation:
 
 ```python
 import warnings
@@ -85,4 +93,4 @@ gap_bin
 (0.041, 0.0912]           0.0181    320        0.4188
 ```
 
-Lift increases with the target-rate gap. The top bin has the highest `pct_negative` because it includes runs where the gap is large by chance (random missingness) rather than by structure — the p-value guard catches most but not all of these cases.
+Lift increases with the target-rate gap. The top bin has the highest `pct_negative` because it includes runs where the gap is large by chance (random missingness) rather than by structure; the p-value guard catches most but not all of these cases.
