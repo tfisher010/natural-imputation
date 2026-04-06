@@ -1,7 +1,7 @@
 import numpy as np
-from evaluation import evaluate
+from .evaluation import evaluate
 from joblib import Parallel, delayed
-from methods import impute_mean, impute_logistic
+from .methods import impute_mean, impute_logistic
 from numpy.random import SeedSequence, default_rng
 from sklearn.datasets import make_classification
 from scipy.stats import beta
