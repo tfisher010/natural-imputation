@@ -15,7 +15,7 @@ This method avoids both the naïveté of mean/median imputation, and the complex
 ## Example
 ```
 >>> import numpy as np
->>> from methods import impute_logistic
+>>> from naturalimputation import impute_logistic
 >>> from sklearn.datasets import make_classification
 >>> 
 >>> rng = np.random.default_rng(0)
