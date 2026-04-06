@@ -10,13 +10,13 @@ $$x^{\ast} = \frac{\ln\left(\frac{y^{\ast}}{1-y^{\ast}}\right) - \beta_0}{\beta_
 
 where $y^{\ast}$ represents the mean of the target variable for the missing observations.
 
-This method avoids both the naïveté of mean/median imputation, and the dependence on other features inherent in multivariate methods like MICE — NaturalImputation is univariate, imputing each feature independently using only the target, with no risk of multicollinearity and trivial parallelization. It is effective when 1) $x'$ sufficiently predicts $y'$ (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the target rate among non-missing observations. When either condition fails, `impute_logistic` falls back to mean imputation.
+This method avoids both the naïveté of mean/median imputation, and the dependence on other features inherent in multivariate methods like MICE — NaturalImputation is univariate, imputing each feature independently using only the target, with no risk of multicollinearity and trivial parallelization. It is effective when 1) $x'$ sufficiently predicts $y'$ (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the target rate among non-missing observations. When either condition fails, `impute_naturally` falls back to mean imputation.
 
 ## Example
 ```python
 import numpy as np
 import pandas as pd
-from naturalimputation import impute_logistic
+from naturalimputation import impute_naturally
 from sklearn.datasets import make_classification
 
 rng = np.random.default_rng(0)
@@ -25,10 +25,13 @@ X, y = make_classification(
 )
 X, y = pd.DataFrame(X), pd.Series(y)
 test = rng.random(len(X)) < 0.25
-impute_logistic(X[0], y, test)[:5]
+x_imputed, imp_val = impute_naturally(X[0], y, test)
+print(f"Imputation value: {imp_val:.4f}")
+print(x_imputed[:5])
 ```
 
 ```
+Imputation value: 0.0405
 0    0.259723
 1   -1.231660
 2    1.154356
@@ -39,7 +42,7 @@ dtype: float64
 
 ## When does NaturalImputation help?
 
-NaturalImputation exploits the difference between the target rate among missing vs non-missing observations. When that gap is large and the feature genuinely predicts the target, natural imputation delivers meaningful lift over mean imputation. `impute_logistic` automatically falls back to mean imputation when the feature's relationship with the target is not statistically significant (controlled by the `alpha` parameter, default 0.05).
+NaturalImputation exploits the difference between the target rate among missing vs non-missing observations. When that gap is large and the feature genuinely predicts the target, natural imputation delivers meaningful lift over mean imputation. `impute_naturally` automatically falls back to mean imputation when the feature's relationship with the target is not statistically significant (controlled by the `alpha` parameter, default 0.05).
 
 The simulation below generates synthetic datasets with varying missingness patterns — including near-random missingness (`steepness=1.01`) — then bins each run by the average absolute target-rate gap ($|\\bar{y}\_{missing} - \\bar{y}\_{nonmissing}|$) and reports the mean AUC lift and the proportion of runs where NaturalImputation underperformed mean imputation:
 
