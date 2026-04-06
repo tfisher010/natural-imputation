@@ -27,6 +27,17 @@ def generate_dataset(steepness: int = 5, random_state=None, **classification_kwa
 def run_simulation(child_seed, steepness, **kwargs):
     rng = default_rng(child_seed)
     X, y, test = generate_dataset(random_state=rng, steepness=steepness, **kwargs)
+
+    # compute average target-rate gap across features
+    gaps = []
+    for i in range(X.shape[1]):
+        missing = np.isnan(X[:, i])
+        train_missing = ~test & missing
+        train_nonmissing = ~test & ~missing
+        if train_missing.any() and train_nonmissing.any():
+            gaps.append(abs(y[train_missing].mean() - y[train_nonmissing].mean()))
+    avg_gap = np.mean(gaps) if gaps else 0.0
+
     X_mean = X.copy()
     for i in range(X.shape[1]):
         X_mean[:, i] = impute_mean(X[:, i])
@@ -36,7 +47,7 @@ def run_simulation(child_seed, steepness, **kwargs):
     for i in range(X.shape[1]):
         X_imp[:, i] = impute_logistic(X[:, i], y, test)
     res_log = evaluate(X_imp, y, test)
-    return res_mean[1], res_log[1]
+    return res_mean[1], res_log[1], avg_gap
 
 
 def run_experiment(n_iterations, steepness=5, random_state=42, n_jobs=-1, **kwargs):
@@ -45,5 +56,5 @@ def run_experiment(n_iterations, steepness=5, random_state=42, n_jobs=-1, **kwar
     results = Parallel(n_jobs=n_jobs)(
         delayed(run_simulation)(seed, steepness, **kwargs) for seed in child_seeds
     )
-    mean_aucs, log_aucs = zip(*results)
-    return np.array(mean_aucs), np.array(log_aucs)
+    mean_aucs, log_aucs, gaps = zip(*results)
+    return np.array(mean_aucs), np.array(log_aucs), np.array(gaps)
