@@ -1,6 +1,6 @@
 # NaturalImputation
 
-**NaturalImputation** is a target-driven imputation method for Logistic Regression. It imputes each missing feature at the value whose predicted log-odds matches the observed target rate among missing rows. In other words, it asks: *"what would this feature's value need to be for the model to predict the target rate we actually see for missing data?"*
+**NaturalImputation** is a target-driven imputation method for Logistic Regression. It imputes each missing feature at the value whose predicted log-odds matches the observed target rate among missing rows, i.e., at the value that induces the model to predict the observed missing target rate.
 
 ## How it works
 
@@ -16,7 +16,7 @@ where $y^{\ast}$ is the mean target rate among missing observations.
 
 ## Why use it?
 
-NaturalImputation is **univariate**: each feature is imputed independently using only the target. This means no risk of multicollinearity and trivial parallelization, unlike multivariate methods like MICE.
+NaturalImputation is **univariate**: each feature is imputed independently using only the target, hence no risk of multicollinearity and trivial parallelization, unlike multivariate methods like MICE.
 
 It is effective when 1) the feature sufficiently predicts the target (enforced automatically via a significance test on $\beta_1$) and 2) the target rate among missing observations diverges from the rate among non-missing observations. When either condition fails, `impute_naturally` falls back to mean imputation.
 
@@ -50,9 +50,9 @@ dtype: float64
 
 ## When does NaturalImputation help?
 
-NaturalImputation exploits the difference between the target rate among missing vs non-missing observations. When that gap is large and the feature genuinely predicts the target, natural imputation delivers meaningful lift over mean imputation. `impute_naturally` automatically falls back to mean imputation when the feature's relationship with the target is not statistically significant (controlled by the `alpha` parameter, default 0.05).
+NaturalImputation exploits the difference between the target rate among missing vs non-missing observations. When that gap is large and the feature predicts the target, natural imputation delivers meaningful lift over mean imputation. `impute_naturally` automatically falls back to mean imputation when the feature's relationship with the target is not statistically significant (controlled by the `alpha` parameter, default 0.05).
 
-The simulation below generates synthetic datasets with varying missingness patterns, including near-random missingness (`steepness=1.01`), then bins each run by the average absolute target-rate gap ($|\\bar{y}\_{missing} - \\bar{y}\_{nonmissing}|$) and reports the mean AUC lift and the proportion of runs where NaturalImputation underperformed mean imputation:
+The below simulation generates synthetic datasets with varying missingness patterns, including near-random missingness (`steepness=1.01`), then bins each run by the average absolute target-rate gap ($|\\bar{y}\_{missing} - \\bar{y}\_{nonmissing}|$) and reports the mean AUC lift and the proportion of runs where NaturalImputation underperformed mean imputation:
 
 ```python
 import warnings
@@ -93,4 +93,4 @@ gap_bin
 (0.041, 0.0912]           0.0181    320        0.4188
 ```
 
-Lift increases with the target-rate gap. The top bin has the highest `pct_negative` because it includes runs where the gap is large by chance (random missingness) rather than by structure; the p-value guard catches most but not all of these cases.
+NaturalImputation generally delivers more lift when the target-rate gap is large. The top bin has the highest `pct_negative` because it includes runs where the gap is large by chance rather than by structure; the p-value guard catches most but not all of these cases.
