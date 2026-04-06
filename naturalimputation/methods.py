@@ -4,12 +4,49 @@ from sklearn.linear_model import LogisticRegression
 
 
 def impute_mean(x: np.ndarray):
+    """Impute missing values in a 1D array with the column mean.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        1D array with NaN values to impute.
+
+    Returns
+    -------
+    np.ndarray
+        Copy of x with NaN values replaced by the mean of non-missing values.
+    """
     x_imp = x.copy()
     x_imp[np.isnan(x_imp)] = np.nanmean(x)
     return x_imp
 
 
 def impute_logistic(x, y, test):
+    """Impute missing values using the natural imputation method for logistic regression.
+
+    Fits a logistic regression on observed (non-missing, non-test) data to model
+    the relationship between x and y, then imputes missing values at the x value
+    whose log-odds equals that of the mean target rate among missing observations.
+
+    Falls back to mean imputation when the feature has no predictive relationship
+    with the target, or when class diversity is insufficient to fit a model.
+
+    Parameters
+    ----------
+    x : np.ndarray or pd.Series
+        1D feature array with NaN values to impute.
+    y : np.ndarray or pd.Series
+        Binary target variable (0/1).
+    test : np.ndarray or pd.Series
+        Boolean mask indicating test observations. Only training observations
+        (where test is False) are used to fit the imputation model.
+
+    Returns
+    -------
+    np.ndarray or pd.Series
+        Copy of x with NaN values replaced. Returns a Series with the original
+        index if x was a Series, otherwise returns an ndarray.
+    """
     index = x.index if isinstance(x, pd.Series) else None
     x = np.asarray(x, dtype=float)
     y = np.asarray(y)
