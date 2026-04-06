@@ -51,6 +51,28 @@ def run_simulation(child_seed, steepness, **kwargs):
 
 
 def run_experiment(n_iterations, steepness=5, random_state=42, n_jobs=-1, **kwargs):
+    """Run parallel simulations comparing natural imputation to mean imputation.
+
+    Parameters
+    ----------
+    n_iterations : int
+        Number of simulation runs.
+    steepness : float, default 5
+        Controls how strongly missingness depends on feature values. Higher
+        values produce more informative missingness patterns.
+    random_state : int, default 42
+        Seed for reproducible results.
+    n_jobs : int, default -1
+        Number of parallel jobs (passed to joblib). -1 uses all cores.
+    **kwargs
+        Additional keyword arguments passed to sklearn.datasets.make_classification.
+
+    Returns
+    -------
+    tuple of (np.ndarray, np.ndarray, np.ndarray)
+        Arrays of test-set AUCs for mean imputation, test-set AUCs for natural
+        imputation, and average absolute target-rate gaps per simulation.
+    """
     ss = SeedSequence(random_state)
     child_seeds = ss.spawn(n_iterations)
     results = Parallel(n_jobs=n_jobs)(
