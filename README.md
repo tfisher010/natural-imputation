@@ -94,3 +94,7 @@ gap_bin
 ```
 
 NaturalImputation generally delivers more lift when the target-rate gap is large. The top bin has the highest `pct_negative` because it includes runs where the gap is large by chance rather than by structure; the p-value guard catches most but not all of these cases.
+
+## Future Directions
+
+The extension to linear regression is straightforward.
